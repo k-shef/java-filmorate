@@ -14,7 +14,10 @@ import ru.yandex.practicum.filmorate.controller.FilmController;
 import ru.yandex.practicum.filmorate.dto.FilmDTO;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.service.FilmService;
+
 import java.time.LocalDate;
+
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @FieldDefaults(level = AccessLevel.PRIVATE)
@@ -25,8 +28,9 @@ public class FilmControllerTest {
 
     @BeforeEach
     public void beforeEachTest() {
-        filmController = new FilmController();
-        mockMvc = MockMvcBuilders.standaloneSetup(new FilmController()).build();
+        FilmService filmService = new FilmService();
+        filmController = new FilmController(filmService);
+        mockMvc = MockMvcBuilders.standaloneSetup(filmController).build();
         film = new Film();
     }
 
