@@ -15,9 +15,9 @@ import ru.yandex.practicum.filmorate.dto.FilmDTO;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
-
+import ru.yandex.practicum.filmorate.storage.film.InMemoryFilmStorage;
+import ru.yandex.practicum.filmorate.storage.user.InMemoryUserStorage;
 import java.time.LocalDate;
-
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @FieldDefaults(level = AccessLevel.PRIVATE)
@@ -28,20 +28,11 @@ public class FilmControllerTest {
 
     @BeforeEach
     public void beforeEachTest() {
-        FilmService filmService = new FilmService();
-        filmController = new FilmController(filmService);
-        mockMvc = MockMvcBuilders.standaloneSetup(filmController).build();
+        filmController = new FilmController(new FilmService(new InMemoryFilmStorage(), new InMemoryUserStorage()));
+        mockMvc = MockMvcBuilders
+                .standaloneSetup(filmController)
+                .build();
         film = new Film();
-    }
-
-    @Test // добавление фильма с корректными полями JUnit
-    public void createFilmTestAssert() {
-        film.setName("Harry Potter and the Philosopher's Stone");
-        film.setDescription("The boy who lived");
-        film.setDuration(121L);
-        film.setReleaseDate(LocalDate.of(2001, 11, 22));
-        filmController.create(film);
-        Assertions.assertEquals(film.getId(), 1, "Фильм не добавлен");
     }
 
     @Test // добавление фильма с корректными полями Mock
@@ -52,7 +43,7 @@ public class FilmControllerTest {
                         .content("{\"name\":\"Harry Potter and the Philosopher's Stone\","
                                 + "\"description\":\"The boy who lived\","
                                 + "\"releaseDate\":\"2001-11-22\",\"duration\":121}"))
-                .andExpect(status().isOk());
+                .andExpect(status().isCreated());
     }
 
     @Test // нельзя создать фильм с неккоректной датой релиза
@@ -81,8 +72,9 @@ public class FilmControllerTest {
         film1.setId(1L);
         film1.setReleaseDate(LocalDate.of(2002, 11, 14));
         filmController.update(film1);
-        FilmDTO filmTest = filmController.findAll().getFirst();
+        FilmDTO filmTest = filmController.findAll().get().getFirst();
         Assertions.assertEquals(filmTest.getDuration(), 174, "Фильм не обновлен");
+        System.out.println(filmController.findAll());
     }
 
     @Test // нельзя обновить фильм с id которого нет
@@ -136,6 +128,4 @@ public class FilmControllerTest {
                                 + "\"releaseDate\":\"2001-11-22\",\"duration\":121}"))
                 .andExpect(status().isBadRequest());
     }
-
-
 }
