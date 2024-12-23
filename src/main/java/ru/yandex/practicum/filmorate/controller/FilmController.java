@@ -17,11 +17,11 @@ import java.util.*;
 @RequestMapping("/films")
 @AllArgsConstructor
 public class FilmController {
-    private FilmService filmService;
+    private final FilmService filmService;
 
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
-    public Optional<List<FilmDTO>> findAll() {
+    public List<FilmDTO> findAll() {
         return filmService.findAll();
     }
 
@@ -51,7 +51,8 @@ public class FilmController {
 
     @GetMapping("/popular")
     @ResponseStatus(HttpStatus.OK)
-    public Optional<Collection<FilmDTO>> getBestFilm(@RequestParam(defaultValue = "10") @Positive Long count) {
-        return filmService.getBestFilm(count);
+    public Collection<FilmDTO> getBestFilm(@RequestParam(defaultValue = "10") @Positive Long count) {
+        Collection<FilmDTO> bestFilms = filmService.getBestFilms(count);
+        return bestFilms.isEmpty() ? Collections.emptyList() : bestFilms;
     }
 }

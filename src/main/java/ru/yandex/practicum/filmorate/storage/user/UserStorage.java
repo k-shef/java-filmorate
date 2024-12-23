@@ -10,9 +10,12 @@ import ru.yandex.practicum.filmorate.model.User;
 import java.util.*;
 
 public interface UserStorage {
+
+    boolean existsById(Long id);
+
     Map<Long, User> users = new HashMap<>();
 
-    Optional<List<UserDTO>> findAll();
+    List<UserDTO> findAll();
 
     UserDTO create(@Valid @RequestBody User user);
 
@@ -22,9 +25,9 @@ public interface UserStorage {
 
     UserDTO deleteFriend(Long id, Long friendId);
 
-    Optional<List<UserDTO>> getAllFriends(Long id);
+    List<UserDTO> getAllFriends(Long id);
 
-    Optional<List<UserDTO>> getMutualFriends(Long id, Long otherId);
+    List<UserDTO> getMutualFriends(Long id, Long otherId);
 
     Map<Long, User> getUsers();
 }

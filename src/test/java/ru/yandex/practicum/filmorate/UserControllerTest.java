@@ -12,6 +12,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import ru.yandex.practicum.filmorate.controller.UserController;
 import ru.yandex.practicum.filmorate.dto.UserDTO;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
+import ru.yandex.practicum.filmorate.mapper.ConvertUsers;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.time.LocalDate;
@@ -32,7 +33,7 @@ public class UserControllerTest {
 
     @BeforeEach
     public void beforeEachTest() {
-        userController = new UserController(new UserService(new InMemoryUserStorage()));
+        userController = new UserController(new UserService(new InMemoryUserStorage(new ConvertUsers())));
         mockMvc = MockMvcBuilders
                 .standaloneSetup(userController)
                 .build();
@@ -88,7 +89,7 @@ public class UserControllerTest {
         user1.setId(1L);
         user1.setBirthday(LocalDate.of(1993, 12, 15));
         userController.update(user1);
-        List<UserDTO> userTest = userController.findAll().get();
+        List<UserDTO> userTest = userController.findAll();
         Assertions.assertEquals(userTest.getFirst().getName(), "Lena", "Имя не обновлено");
     }
 
@@ -112,7 +113,7 @@ public class UserControllerTest {
                         .content("{\"email\":\"gromgrommolnia@yandex.ru\","
                                 + "\"login\":\"gromgrommolnia\","
                                 + "\"name\":\"Katia\","
-                                + "\"birthday\":\"2024-12-15\"}"))
+                                + "\"birthday\":\"2025-12-15\"}"))
                 .andExpect(status().isBadRequest());
     }
 }

@@ -1,8 +1,9 @@
 package ru.yandex.practicum.filmorate.storage.film;
 
-
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.dto.FilmDTO;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.mapper.ConvertFilms;
 import ru.yandex.practicum.filmorate.model.Film;
 
 import java.util.*;
@@ -11,45 +12,64 @@ import java.util.stream.Collectors;
 @Component
 public class InMemoryFilmStorage implements FilmStorage {
 
+    private final ConvertFilms convertFilms;
+    private final Map<Long, Film> films = new HashMap<>();
+    private long currentId = 0;
+
+    public InMemoryFilmStorage(ConvertFilms convertFilms) {
+        this.convertFilms = convertFilms;
+    }
+
     @Override
-    public Optional<List<FilmDTO>> findAll() {
-        List<FilmDTO> allFilmDTO = new ArrayList<>();
-        films.values().forEach(film -> allFilmDTO.add(getDTO(film)));
-        return Optional.of(allFilmDTO);
+    public List<FilmDTO> findAll() {
+        return films.values().stream()
+                .map(convertFilms::getDTO)
+                .collect(Collectors.toList());
     }
 
     @Override
     public FilmDTO create(Film film) {
         film.setId(getNextId());
         films.put(film.getId(), film);
-        return getDTO(film);
+        return convertFilms.getDTO(film);
     }
 
     @Override
     public FilmDTO update(Film film) {
+        if (!films.containsKey(film.getId())) {
+            throw new NotFoundException("Фильм с ID " + film.getId() + " не найден.");
+        }
         films.put(film.getId(), film);
-        return getDTO(film);
+        return convertFilms.getDTO(film);
     }
 
     @Override
     public FilmDTO putLike(Long id, Long userId) {
-        films.get(id).getLikes().add(userId);
-        return getDTO(films.get(id));
+        Film film = films.get(id);
+        if (film == null) {
+            throw new NoSuchElementException("Фильм с ID " + id + " не найден.");
+        }
+        film.getLikes().add(Collections.singleton(userId));
+        return convertFilms.getDTO(film);
     }
 
     @Override
     public FilmDTO deleteLike(Long id, Long userId) {
-        films.get(id).getLikes().remove(userId);
-        return getDTO(films.get(id));
+        Film film = films.get(id);
+        if (film == null) {
+            throw new NoSuchElementException("Фильм с ID " + id + " не найден.");
+        }
+        film.getLikes().remove(userId);
+        return convertFilms.getDTO(film);
     }
 
     @Override
-    public Optional<Collection<FilmDTO>> getBestFilm(Long count) {
-        return Optional.of(films.values().stream()
+    public Collection<FilmDTO> getBestFilms(Long count) {
+        return films.values().stream()
                 .sorted(Comparator.comparing((Film film) -> film.getLikes().size()).reversed())
                 .limit(count)
-                .map(this::getDTO)
-                .collect(Collectors.toList()));
+                .map(convertFilms::getDTO)
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -57,22 +77,13 @@ public class InMemoryFilmStorage implements FilmStorage {
         return films;
     }
 
-    private FilmDTO getDTO(Film film) {
-        FilmDTO filmDTO = new FilmDTO();
-        filmDTO.setId(film.getId());
-        filmDTO.setName(film.getName());
-        filmDTO.setDescription(film.getDescription());
-        filmDTO.setReleaseDate(film.getReleaseDate());
-        filmDTO.setDuration(film.getDuration());
-        return filmDTO;
+    private Long getNextId() {
+        return ++currentId;
     }
 
-    private Long getNextId() {
-        long currentMaxId = films.keySet()
-                .stream()
-                .mapToLong(id -> id)
-                .max()
-                .orElse(0);
-        return ++currentMaxId;
+    @Override
+    public boolean existsById(Long id) {
+        return films.containsKey(id);
     }
 }
+

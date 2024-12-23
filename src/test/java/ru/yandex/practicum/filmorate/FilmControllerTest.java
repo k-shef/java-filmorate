@@ -13,11 +13,15 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import ru.yandex.practicum.filmorate.controller.FilmController;
 import ru.yandex.practicum.filmorate.dto.FilmDTO;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.mapper.ConvertFilms;
+import ru.yandex.practicum.filmorate.mapper.ConvertUsers;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
 import ru.yandex.practicum.filmorate.storage.film.InMemoryFilmStorage;
 import ru.yandex.practicum.filmorate.storage.user.InMemoryUserStorage;
+
 import java.time.LocalDate;
+
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @FieldDefaults(level = AccessLevel.PRIVATE)
@@ -26,9 +30,10 @@ public class FilmControllerTest {
     MockMvc mockMvc;
     Film film;
 
+
     @BeforeEach
     public void beforeEachTest() {
-        filmController = new FilmController(new FilmService(new InMemoryFilmStorage(), new InMemoryUserStorage()));
+        filmController = new FilmController(new FilmService(new InMemoryFilmStorage(new ConvertFilms()), new InMemoryUserStorage(new ConvertUsers())));
         mockMvc = MockMvcBuilders
                 .standaloneSetup(filmController)
                 .build();
@@ -72,7 +77,7 @@ public class FilmControllerTest {
         film1.setId(1L);
         film1.setReleaseDate(LocalDate.of(2002, 11, 14));
         filmController.update(film1);
-        FilmDTO filmTest = filmController.findAll().get().getFirst();
+        FilmDTO filmTest = filmController.findAll().getFirst();
         Assertions.assertEquals(filmTest.getDuration(), 174, "Фильм не обновлен");
         System.out.println(filmController.findAll());
     }

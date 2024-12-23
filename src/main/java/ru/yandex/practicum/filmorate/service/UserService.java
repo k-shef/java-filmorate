@@ -13,9 +13,13 @@ import ru.yandex.practicum.filmorate.group.UpdateGroup;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
+
+import static com.fasterxml.jackson.databind.type.LogicalType.Collection;
 
 @Slf4j
 @Service
@@ -23,10 +27,10 @@ import java.util.Optional;
 public class UserService {
     private final UserStorage userStorage;
 
-    public Optional<List<UserDTO>> findAll() {
+    public List<UserDTO> findAll() {
         log.info("Запрос на получение списка пользователей");
         if (userStorage.getUsers().isEmpty()) {
-            return Optional.empty();
+            return Collections.emptyList();
         }
         return userStorage.findAll();
     }
@@ -58,19 +62,19 @@ public class UserService {
         return userStorage.deleteFriend(id, friendId);
     }
 
-    public Optional<List<UserDTO>> getAllFriends(Long id) {
+    public List<UserDTO> getAllFriends(Long id) {
         validId(id);
         if (Objects.isNull(userStorage.getUsers().get(id).getFriends())) {
-            return Optional.empty();
+            return Collections.emptyList();
         }
-        Optional<List<UserDTO>> friends = userStorage.getAllFriends(id);
         log.info("Запрос на получение всех друзей пользователя с id {}", id);
-        return friends;
+        return userStorage.getAllFriends(id);
+
     }
 
-    public Optional<List<UserDTO>> getMutualFriends(Long id, Long otherId) {
+    public List<UserDTO> getMutualFriends(Long id, Long otherId) {
         validUserEqualsFriend(id, otherId, "Нельзя проверять соответствие друзей у себя и себя");
-        Optional<List<UserDTO>> friends = userStorage.getMutualFriends(id, otherId);
+        List<UserDTO> friends = userStorage.getMutualFriends(id, otherId);
         log.info("Общие друзья пользователь с id {} и пользователя с id {}", otherId, id);
         return friends;
     }

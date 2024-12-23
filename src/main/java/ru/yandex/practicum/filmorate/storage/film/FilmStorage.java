@@ -7,9 +7,12 @@ import ru.yandex.practicum.filmorate.model.Film;
 import java.util.*;
 
 public interface FilmStorage {
+
+    boolean existsById(Long id);
+
     Map<Long, Film> films = new HashMap<>();
 
-    Optional<List<FilmDTO>> findAll();
+    List<FilmDTO> findAll();
 
     FilmDTO create(Film film);
 
@@ -19,7 +22,7 @@ public interface FilmStorage {
 
     FilmDTO deleteLike(Long id, Long userId);
 
-    Optional<Collection<FilmDTO>> getBestFilm(Long count);
+    Collection<FilmDTO> getBestFilms(Long count);
 
     Map<Long, Film> getFilms();
 }

@@ -13,7 +13,6 @@ import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @Slf4j
@@ -23,11 +22,8 @@ public class FilmService {
     FilmStorage filmStorage;
     UserStorage userStorage;
 
-    public Optional<List<FilmDTO>> findAll() {
+    public List<FilmDTO> findAll() {
         log.info("Запрос на получение списка фильмов");
-        if (filmStorage.getFilms().isEmpty()) {
-            return Optional.empty();
-        }
         return filmStorage.findAll();
     }
 
@@ -61,29 +57,23 @@ public class FilmService {
         return film;
     }
 
-    public Optional<Collection<FilmDTO>> getBestFilm(Long count) {
+    public Collection<FilmDTO> getBestFilms(Long count) {
         log.info("Запрос на получение списка лучших фильмов");
-        if (filmStorage.getFilms().isEmpty()) {
-            return Optional.empty();
-        }
-        Long size = (long) filmStorage.getFilms().size();
-        if (size < count) {
-            return filmStorage.getBestFilm(size);
-        }
-        return filmStorage.getBestFilm(count);
+        return filmStorage.getBestFilms(count);
     }
 
     private void validId(Long id) {
-        if (!filmStorage.getFilms().containsKey(id)) {
+        if (!filmStorage.existsById(id)) {
             log.error("Фильма с id = {} нет.", id);
-            throw new NotFoundException("Фильма с id = {} нет." + id);
+            throw new NotFoundException("Фильма с id = " + id + " нет.");
         }
     }
 
     private void validIdUser(Long id) {
-        if (!userStorage.getUsers().containsKey(id)) {
+        if (!userStorage.existsById(id)) {
             log.error("Пользователя с id = {} нет.", id);
-            throw new NotFoundException("Фильма с id = {} нет." + id);
+            throw new NotFoundException("Пользователя с id = " + id + " нет.");
         }
     }
+
 }

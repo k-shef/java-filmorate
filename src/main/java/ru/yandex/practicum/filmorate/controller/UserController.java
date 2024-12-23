@@ -25,7 +25,7 @@ public class UserController {
 
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
-    public Optional<List<UserDTO>> findAll() {
+    public List<UserDTO> findAll() {
         return userService.findAll();
     }
 
@@ -55,13 +55,13 @@ public class UserController {
 
     @GetMapping("/{id}/friends")
     @ResponseStatus(HttpStatus.OK)
-    public Optional<List<UserDTO>> getAllFriends(@PathVariable @Positive Long id) {
+    public List<UserDTO> getAllFriends(@PathVariable @Positive Long id) {
         return userService.getAllFriends(id);
     }
 
     @GetMapping("/{id}/friends/common/{otherId}")
     @ResponseStatus(HttpStatus.OK)
-    public Optional<List<UserDTO>> getMutualFriends(@PathVariable Long id, @PathVariable Long otherId) {
+    public List<UserDTO> getMutualFriends(@PathVariable Long id, @PathVariable Long otherId) {
         return userService.getMutualFriends(id, otherId);
     }
 }
