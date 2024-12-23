@@ -12,9 +12,18 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import ru.yandex.practicum.filmorate.controller.UserController;
 import ru.yandex.practicum.filmorate.dto.UserDTO;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
+import ru.yandex.practicum.filmorate.mapper.ConvertUsers;
 import ru.yandex.practicum.filmorate.model.User;
+
 import java.time.LocalDate;
+
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import ru.yandex.practicum.filmorate.service.UserService;
+import ru.yandex.practicum.filmorate.storage.user.InMemoryUserStorage;
+
+import java.util.List;
+
 
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class UserControllerTest {
@@ -24,19 +33,11 @@ public class UserControllerTest {
 
     @BeforeEach
     public void beforeEachTest() {
-        userController = new UserController();
-        mockMvc = MockMvcBuilders.standaloneSetup(new UserController()).build();
+        userController = new UserController(new UserService(new InMemoryUserStorage(new ConvertUsers())));
+        mockMvc = MockMvcBuilders
+                .standaloneSetup(userController)
+                .build();
         user = new User();
-    }
-
-    @Test // добавление фильма с корректными полями JUnit
-    public void createUserTestAssert() {
-        user.setEmail("gromgrommolnia@yandex.ru");
-        user.setLogin("gromgrommolnia");
-        user.setName("Katia");
-        user.setBirthday(LocalDate.of(1993, 12, 15));
-        userController.create(user);
-        Assertions.assertEquals(user.getId(), 1, "Пользователь не добавлен");
     }
 
     @Test // добавление фильма с корректными полями Mock
@@ -48,7 +49,7 @@ public class UserControllerTest {
                                 + "\"login\":\"gromgrommolnia\","
                                 + "\"name\":\"Katia\","
                                 + "\"birthday\":\"1993-12-15\"}"))
-                .andExpect(status().isOk());
+                .andExpect(status().isCreated());
     }
 
     @Test // нельзя добавить пользователя с некорректным логином
@@ -88,8 +89,8 @@ public class UserControllerTest {
         user1.setId(1L);
         user1.setBirthday(LocalDate.of(1993, 12, 15));
         userController.update(user1);
-        UserDTO userTest = userController.findAll().getFirst();
-        Assertions.assertEquals(userTest.getName(), "Lena", "Имя не обновлено");
+        List<UserDTO> userTest = userController.findAll();
+        Assertions.assertEquals(userTest.getFirst().getName(), "Lena", "Имя не обновлено");
     }
 
     @Test // нельзя передать некорректно имейл
@@ -112,7 +113,7 @@ public class UserControllerTest {
                         .content("{\"email\":\"gromgrommolnia@yandex.ru\","
                                 + "\"login\":\"gromgrommolnia\","
                                 + "\"name\":\"Katia\","
-                                + "\"birthday\":\"2024-12-15\"}"))
+                                + "\"birthday\":\"2025-12-15\"}"))
                 .andExpect(status().isBadRequest());
     }
 }

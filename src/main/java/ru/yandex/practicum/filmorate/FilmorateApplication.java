@@ -11,10 +11,10 @@ import lombok.extern.slf4j.Slf4j;
 @SpringBootApplication
 @Slf4j
 public class FilmorateApplication {
-	public static void main(String[] args) {
-		((ch.qos.logback.classic.Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME)).setLevel(Level.INFO);
-		SpringApplication.run(FilmorateApplication.class, args);
+    public static void main(String[] args) {
+        ((ch.qos.logback.classic.Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME)).setLevel(Level.INFO);
+        SpringApplication.run(FilmorateApplication.class, args);
 
-		log.info("Приложение запущено");
-	}
+        log.info("Приложение запущено");
+    }
 }
