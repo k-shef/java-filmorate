@@ -45,20 +45,16 @@ public class InMemoryFilmStorage implements FilmStorage {
 
     @Override
     public FilmDTO putLike(Long id, Long userId) {
-        Film film = films.get(id);
-        if (film == null) {
-            throw new NoSuchElementException("Фильм с ID " + id + " не найден.");
-        }
-        film.getLikes().add(Collections.singleton(userId));
+        Film film = Optional.ofNullable(films.get(id))
+                .orElseThrow(() -> new NotFoundException("Фильм с ID " + id + " не найден."));
+        film.getLikes().add(userId);
         return convertFilms.getDTO(film);
     }
 
     @Override
     public FilmDTO deleteLike(Long id, Long userId) {
-        Film film = films.get(id);
-        if (film == null) {
-            throw new NoSuchElementException("Фильм с ID " + id + " не найден.");
-        }
+        Film film = Optional.ofNullable(films.get(id))
+                .orElseThrow(() -> new NotFoundException("Фильм с ID " + id + " не найден."));
         film.getLikes().remove(userId);
         return convertFilms.getDTO(film);
     }

@@ -9,6 +9,7 @@ import ru.yandex.practicum.filmorate.validation.StartRelease;
 import ru.yandex.practicum.filmorate.group.UpdateGroup;
 
 import java.time.LocalDate;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -29,9 +30,6 @@ public class Film {
     LocalDate releaseDate;
     @Min(value = 0, message = "Продолжительность фильма не может быть отрицательным числом")
     Long duration;
-    Set<Set<Long>> likes = new TreeSet<Set<Long>>();
+    Set<Long> likes = new HashSet<>();
 
-    public void setLikes(Set<Long> id) {
-        likes.add(id);
-    }
 }

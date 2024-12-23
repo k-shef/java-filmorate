@@ -16,14 +16,4 @@ public class ConvertFilms {
         return filmDTO;
     }
 
-    public Film toEntity(FilmDTO filmDTO) {
-        Film film = new Film();
-        film.setId(filmDTO.getId());
-        film.setName(filmDTO.getName());
-        film.setDescription(filmDTO.getDescription());
-        film.setReleaseDate(filmDTO.getReleaseDate());
-        film.setDuration(filmDTO.getDuration());
-        film.setLikes(filmDTO.getLikes());
-        return film;
-    }
 }
