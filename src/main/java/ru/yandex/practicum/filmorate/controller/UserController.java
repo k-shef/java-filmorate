@@ -2,66 +2,63 @@ package ru.yandex.practicum.filmorate.controller;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.dto.UserDTO;
+import ru.yandex.practicum.filmorate.dal.dao.UserStorage;
 import ru.yandex.practicum.filmorate.group.UpdateGroup;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.service.UserService;
 
-import java.util.*;
+import java.util.List;
 
 @RestController
-@RequestMapping("/users")
+@RequiredArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class UserController {
-    private final UserService userService;
+    UserStorage userStorage;
 
-    @Autowired
-    public UserController(@Autowired UserService userService) {
-        this.userService = userService;
+    @GetMapping("/users/{id}")
+    public User getById(@PathVariable @Positive final int id) {
+        return userStorage.getById(id);
     }
 
-    @GetMapping
-    @ResponseStatus(HttpStatus.OK)
-    public List<UserDTO> findAll() {
-        return userService.findAll();
+    @GetMapping("/users")
+    public List<User> findAll() {
+        return userStorage.findAll();
     }
 
-    @PostMapping
+    @PostMapping("/users")
     @ResponseStatus(HttpStatus.CREATED)
-    public UserDTO create(@Valid @RequestBody User user) {
-        return userService.create(user);
+    public User create(@Valid @RequestBody final User user) {
+        return userStorage.create(user);
     }
 
-    @PutMapping
-    @ResponseStatus(HttpStatus.OK)
-    public UserDTO update(@Validated(UpdateGroup.class) @RequestBody User user) {
-        return userService.update(user);
+    @PutMapping("/users")
+    public User update(@Validated(UpdateGroup.class) @Valid @RequestBody final User user) {
+        return userStorage.update(user);
     }
 
-    @PutMapping("/{id}/friends/{friendId}")
-    @ResponseStatus(HttpStatus.OK)
-    public UserDTO addNewFriend(@PathVariable @Positive Long id, @PathVariable @Positive Long friendId) {
-        return userService.addNewFriend(id, friendId);
+    @PutMapping("/users/{id}/friends/{friendId}")
+    public void addNewFriend(@PathVariable @Positive final int id, @PathVariable @Positive final int friendId) {
+        userStorage.addNewFriend(id, friendId);
     }
 
-    @DeleteMapping("/{id}/friends/{friendId}")
-    @ResponseStatus(HttpStatus.OK)
-    public UserDTO deleteFriend(@PathVariable @Positive Long id, @PathVariable @Positive Long friendId) {
-        return userService.deleteFriend(id, friendId);
+    @DeleteMapping("/users/{id}/friends/{friendId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteFriend(@PathVariable @Positive final int id, @PathVariable @Positive final int friendId) {
+        userStorage.deleteFriend(id, friendId);
     }
 
-    @GetMapping("/{id}/friends")
-    @ResponseStatus(HttpStatus.OK)
-    public List<UserDTO> getAllFriends(@PathVariable @Positive Long id) {
-        return userService.getAllFriends(id);
+    @GetMapping("/users/{id}/friends")
+    public List<User> getAllFriends(@PathVariable @Positive final int id) {
+        return userStorage.getAllFriends(id);
     }
 
-    @GetMapping("/{id}/friends/common/{otherId}")
-    @ResponseStatus(HttpStatus.OK)
-    public List<UserDTO> getMutualFriends(@PathVariable Long id, @PathVariable Long otherId) {
-        return userService.getMutualFriends(id, otherId);
+    @GetMapping("/users/{id}/friends/common/{otherId}")
+    public List<User> getMutualFriends(@PathVariable final int id, @PathVariable final int otherId) {
+        return userStorage.getMutualFriends(id, otherId);
     }
 }
