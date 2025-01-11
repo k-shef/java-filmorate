@@ -10,7 +10,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
-import org.springframework.jdbc.core.JdbcTemplate;
 import ru.yandex.practicum.filmorate.dal.dao.FilmStorage;
 import ru.yandex.practicum.filmorate.dal.impl.UserDbStorage;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
@@ -34,8 +33,6 @@ class FilmStorageTest {
     @Autowired
     FilmStorage filmStorage;
 
-    @Autowired
-    JdbcTemplate jdbcTemplate;
 
     @Test
     @DisplayName("Should find all films")
@@ -146,10 +143,7 @@ class FilmStorageTest {
         @Test
         @DisplayName("Should delete like from film")
         void deleteLikeTest() {
-            // Сначала ставим лайк
             filmStorage.putLike(1, 1);
-
-            // Затем удаляем
             filmStorage.deleteLike(1, 1);
 
             Collection<Film> bestFilms = filmStorage.getBestFilm(1);
