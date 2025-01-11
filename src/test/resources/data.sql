@@ -17,7 +17,7 @@ FROM mpa;
 DELETE
 FROM genres;
 
--- Вставка данных
+
 INSERT INTO mpa (mpa_name)
 VALUES ('G');
 INSERT INTO mpa (mpa_name)
