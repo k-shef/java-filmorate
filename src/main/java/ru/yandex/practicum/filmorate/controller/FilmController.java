@@ -1,54 +1,61 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import jakarta.validation.Valid;
-import lombok.extern.slf4j.Slf4j;
+import jakarta.validation.constraints.Positive;
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
+import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.dto.FilmDTO;
+import ru.yandex.practicum.filmorate.dal.dao.FilmStorage;
 import ru.yandex.practicum.filmorate.group.UpdateGroup;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.service.FilmService;
-
 
 import java.util.List;
 
 @RestController
-@RequestMapping("/films")
-@Slf4j
+@RequiredArgsConstructor
+@Validated
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class FilmController {
-    private final FilmService filmService;
 
-    public FilmController(FilmService filmService) {
-        this.filmService = filmService;
+    FilmStorage filmStorage;
+
+    @GetMapping("/films/{id}")
+    public Film getById(@PathVariable @Positive final int id) {
+        return filmStorage.getById(id);
     }
 
-    @GetMapping
-    public List<FilmDTO> findAll() {
-        log.info("Запрос на получение списка фильмов");
-        return filmService.findAll().stream()
-                .map(this::getDTO)
-                .toList();
+    @GetMapping("/films")
+    public List<Film> findAll() {
+        return filmStorage.findAll();
     }
 
-    @PostMapping
-    public FilmDTO create(@Valid @RequestBody Film film) {
-        log.info("Добавление фильма: {}", film.getName());
-        return getDTO(filmService.create(film));
+    @PostMapping("/films")
+    @ResponseStatus(HttpStatus.CREATED)
+    public Film create(@Valid @RequestBody final Film film) {
+        return filmStorage.create(film);
     }
 
-    @PutMapping
-    public FilmDTO update(@Validated(UpdateGroup.class) @RequestBody Film film) {
-        log.info("Обновление фильма с id {}", film.getId());
-        return getDTO(filmService.update(film));
+    @PutMapping("/films")
+    public Film update(@Validated(UpdateGroup.class) @Valid @RequestBody final Film film) {
+        return filmStorage.update(film);
     }
 
-    private FilmDTO getDTO(Film film) {
-        FilmDTO filmDTO = new FilmDTO();
-        filmDTO.setId(film.getId());
-        filmDTO.setName(film.getName());
-        filmDTO.setDescription(film.getDescription());
-        filmDTO.setReleaseDate(film.getReleaseDate());
-        filmDTO.setDuration(film.getDuration());
-        return filmDTO;
+    @PutMapping("/films/{id}/like/{userId}")
+    public void putLike(@PathVariable @Positive final int id, @PathVariable @Positive final int userId) {
+        filmStorage.putLike(id, userId);
+    }
+
+    @DeleteMapping("/films/{id}/like/{userId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteLike(@PathVariable @Positive final int id, @PathVariable @Positive final int userId) {
+        filmStorage.deleteLike(id, userId);
+    }
+
+    @GetMapping("/films/popular")
+    public List<Film> getBestFilm(@RequestParam(defaultValue = "10") @Positive final int count) {
+        return filmStorage.getBestFilm(count);
     }
 }

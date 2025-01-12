@@ -1,77 +1,64 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import jakarta.validation.Valid;
-import lombok.extern.slf4j.Slf4j;
+import jakarta.validation.constraints.Positive;
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
+import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.dto.UserDTO;
-import ru.yandex.practicum.filmorate.exception.NotFoundException;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
+import ru.yandex.practicum.filmorate.dal.dao.UserStorage;
 import ru.yandex.practicum.filmorate.group.UpdateGroup;
 import ru.yandex.practicum.filmorate.model.User;
-import java.util.*;
+
+import java.util.List;
 
 @RestController
-@RequestMapping("/users")
-@Slf4j
+@RequiredArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class UserController {
-    private final Map<Long, User> users = new HashMap<>();
+    UserStorage userStorage;
 
-    @GetMapping
-    public List<UserDTO> findAll() {
-        log.info("Запрос на получение списка пользователей");
-        List<UserDTO> allUserDTO = new ArrayList<>();
-        users.values().forEach(film -> allUserDTO.add(getDTO(film)));
-        return allUserDTO;
+    @GetMapping("/users/{id}")
+    public User getById(@PathVariable @Positive final int id) {
+        return userStorage.getById(id);
     }
 
-    @PostMapping
-    public UserDTO create(@Valid @RequestBody User user) {
-        validLogin(user.getLogin());
-        if (Objects.isNull(user.getName())) {
-            user.setName(user.getLogin());
-        }
-        user.setId(getNextId());
-        users.put(user.getId(), user);
-        log.info("Пользователь успешно добавлен под id {}", user.getId());
-        return getDTO(user);
+    @GetMapping("/users")
+    public List<User> findAll() {
+        return userStorage.findAll();
     }
 
-    @PutMapping
-    public UserDTO update(@Validated(UpdateGroup.class) @RequestBody User user) {
-        if (!users.containsKey(user.getId())) {
-            log.info("Пользователя с id = {} нет.", user.getId());
-            throw new NotFoundException("Пользователя с id = {} нет." + user.getId());
-        }
-        validLogin(user.getLogin());
-        users.put(user.getId(), user);
-        log.info("Пользователь с id {} успешно обновлен", user.getId());
-        return getDTO(user);
+    @PostMapping("/users")
+    @ResponseStatus(HttpStatus.CREATED)
+    public User create(@Valid @RequestBody final User user) {
+        return userStorage.create(user);
     }
 
-    private Long getNextId() {
-        long currentMaxId = users.keySet()
-                .stream()
-                .mapToLong(id -> id)
-                .max()
-                .orElse(0);
-        return ++currentMaxId;
+    @PutMapping("/users")
+    public User update(@Validated(UpdateGroup.class) @Valid @RequestBody final User user) {
+        return userStorage.update(user);
     }
 
-    private void validLogin(String login) {
-        if (login.contains(" ")) {
-            log.error("Логин пользователя не должен содержать пробелы");
-            throw new ValidationException("Логин пользователя не должен содержать пробелы");
-        }
+    @PutMapping("/users/{id}/friends/{friendId}")
+    public void addNewFriend(@PathVariable @Positive final int id, @PathVariable @Positive final int friendId) {
+        userStorage.addNewFriend(id, friendId);
     }
 
-    private UserDTO getDTO(User user) {
-        UserDTO userDTO = new UserDTO();
-        userDTO.setId(user.getId());
-        userDTO.setEmail(user.getEmail());
-        userDTO.setLogin(user.getLogin());
-        userDTO.setName(user.getName());
-        userDTO.setBirthday(user.getBirthday());
-        return userDTO;
+    @DeleteMapping("/users/{id}/friends/{friendId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteFriend(@PathVariable @Positive final int id, @PathVariable @Positive final int friendId) {
+        userStorage.deleteFriend(id, friendId);
+    }
+
+    @GetMapping("/users/{id}/friends")
+    public List<User> getAllFriends(@PathVariable @Positive final int id) {
+        return userStorage.getAllFriends(id);
+    }
+
+    @GetMapping("/users/{id}/friends/common/{otherId}")
+    public List<User> getMutualFriends(@PathVariable final int id, @PathVariable final int otherId) {
+        return userStorage.getMutualFriends(id, otherId);
     }
 }
