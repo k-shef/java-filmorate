@@ -37,7 +37,6 @@ public class UserRepositoryImpl implements UserRepository {
     public List<User> findAll() {
         String sql = "SELECT * " +
                 "FROM users u; ";
-        //"LEFT JOIN friends f ON u.user_id = f.user_id"; ";
         return jdbc.query(sql, userCollectionMapper);
     }
 

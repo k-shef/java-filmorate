@@ -48,7 +48,7 @@ public class FilmRepositoryImpl implements FilmRepository {
                 "LEFT JOIN film_genres fg ON f.film_id = fg.film_id " +
                 "LEFT JOIN genres g ON fg.genre_id = g.genre_id; ";
         Map<Integer, Film> films = jdbc.query(sql, Map.of(), filmCollectionMapper);
-        assert films != null;
+        Objects.requireNonNull(films, "The films map should not be null");
         return films.values().stream().toList();
     }
 
@@ -118,7 +118,7 @@ public class FilmRepositoryImpl implements FilmRepository {
                 "LIMIT :count;";
 
         Map<Integer, Film> films = jdbc.query(sql, Map.of("count", count), filmCollectionMapper);
-        assert films != null;
+        Objects.requireNonNull(films, "The films map should not be null");
         return films.values().stream().toList();
     }
 

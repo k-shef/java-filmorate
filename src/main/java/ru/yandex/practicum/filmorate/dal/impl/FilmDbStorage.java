@@ -104,11 +104,14 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     private Film validAndAddMpaGenres(final Film film) {
+        if (Objects.isNull(film.getMpa()) && Objects.isNull(film.getGenres())) {
+            return film;
+        }
+
         if (Objects.nonNull(film.getMpa())) {
             log.info("Проверка на корректность введенного к фильму mpa");
             film.setMpa(mpaRepository.findById(film.getMpa().getId())
-                    .orElseThrow(() -> new ValidationException("В приложении не предусмотрено такое mpa"))
-            );
+                    .orElseThrow(() -> new ValidationException("В приложении не предусмотрено такое mpa")));
         }
 
         if (Objects.nonNull(film.getGenres())) {
@@ -125,7 +128,9 @@ public class FilmDbStorage implements FilmStorage {
                 throw new ValidationException("Передан несуществующий жанр");
             }
         }
+
         return film;
     }
+
 }
 
